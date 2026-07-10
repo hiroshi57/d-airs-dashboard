@@ -1,0 +1,11 @@
+# D-AIRS v1 算出式(バージョン管理: 過去スコアの再計算/旧版参照の両立)
+version: "v1.0"
+weights:
+  adoption: 0.30      # A1 利用(WAU率, 継続率)
+  application: 0.30   # A2 深さ(用途段階)
+  ability: 0.20       # A3 スキル(サーベイ+研修受講率)
+  assurance: 0.20     # A4 ガバナンス(チェックリスト充足率)
+privacy:
+  min_segment: 5      # 最小集計単位(5名未満はマスク)
+churn:
+  drop_ratio: 0.5     # ピーク比これ以上の減少で離脱検知
