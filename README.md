@@ -11,17 +11,19 @@ AI定着スコアリング・ダッシュボード（**D-AIRS: Digital-identity 
 
 ## ステータス
 
-🟢 **差別化コア実装済み**（D-AIRSスコア＋プライバシーマスク＋離脱検知） / 他機能は承認後に拡張
+🟢 **全機能拡張中**（D-AIRSスコア / プライバシーマスク / 離脱検知 / F3介入レコメンド / 効果測定）
 
 - [docs/dairs_spec_v1.md](docs/dairs_spec_v1.md) — 4ドメイン算出式・重み・プライバシー設計
-- `backend/scoring/` — D-AIRS算出(formula.yamlでバージョン管理) + 5名未満マスク + 離脱検知（tests 6件PASS）
+- `backend/scoring/` — D-AIRS算出(formula.yamlでバージョン管理) + 5名未満マスク + 離脱検知
+- `backend/recommend/` — F3 介入レコメンド(スコアパターン→施策マスタ, **全推奨に施策マスタID=創作なし**)
+- `backend/effect/` — 効果測定モード(介入群/非介入群の差分の差, **因果注記を自動付与**)
 
 ```bash
 python demo.py          # D-AIRSスコア + プライバシーマスク + 離脱検知
-python -m pytest -q
+python -m pytest -q     # テスト12件
 ```
 
-進め方（プロンプト指定）: D-AIRS v1仕様書 → **承認** → 実装（F1取込→F2ダッシュボード→F3介入→F4レポート、dbtはテスト付き）。
+進め方（プロンプト指定）: F1取込→F2ダッシュボード→F3介入→F4レポート。
 
 ## 予定フォルダ構成（実装時）
 

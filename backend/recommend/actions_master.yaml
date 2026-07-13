@@ -1,0 +1,7 @@
+# 施策マスタ(当社研修・伴走メニュー対応). レコメンドはこのIDからのみ選定(創作しない)。
+actions:
+  - {id: M-01, name: AI基礎研修+業務テンプレ配布, effort_days: 5, target: 対象部署}
+  - {id: M-02, name: 活用深化ワークショップ, effort_days: 3, target: 推進部署}
+  - {id: M-03, name: ガバナンス整備伴走, effort_days: 8, target: 管理部門}
+  - {id: M-04, name: 部署横展開キックオフ, effort_days: 4, target: 未導入部署}
+  - {id: M-05, name: 定着リマインド運用設計, effort_days: 2, target: 全社}

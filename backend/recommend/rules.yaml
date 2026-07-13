@@ -1,0 +1,8 @@
+# スコアパターン -> 施策マスタID のマッピング(rules.yaml)。
+# cond: ドメイン(adoption/application/ability/assurance)の high(>=60)/low(<40) パターン。
+rules:
+  - {when: {ability: low, adoption: low}, action: M-01}   # 使えない×使ってない -> 基礎研修+テンプレ
+  - {when: {adoption: high, application: low}, action: M-02}  # 使ってる×浅い -> 深化WS
+  - {when: {assurance: low}, action: M-03}                # ガバナンス低 -> 整備伴走
+  - {when: {adoption: low}, action: M-04}                 # 未浸透 -> 横展開
+  - {when: {adoption: high, application: high}, action: M-05}  # 成熟 -> 定着維持
