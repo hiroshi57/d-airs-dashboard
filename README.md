@@ -20,10 +20,21 @@ AI定着スコアリング・ダッシュボード（**D-AIRS: Digital-identity 
 
 ```bash
 python demo.py          # D-AIRSスコア + プライバシーマスク + 離脱検知
-python -m pytest -q     # テスト12件
+python -m pytest -q     # テスト17件(DB/テナント分離/HTMLレポート/API E2E含む)
 ```
 
-進め方（プロンプト指定）: F1取込→F2ダッシュボード→F3介入→F4レポート。
+## 本番構成（SQLite + HTMLレポート + Vite 2画面）
+
+- **DB**: `backend/db/`（SQLite・標準ライブラリ）。全クエリ tenant_id 強制フィルタ＝**テナント分離**（越境不可を自動テスト）
+- **API**: `backend/api/main.py`（FastAPI）。clients / records(月次スコア算出) / report(HTML)
+- **HTMLレポート**: `backend/report/builder.py`（4ドメイン内訳＋スコア推移＋推奨施策、プライバシー注記、XSSエスケープ）
+- **フロント**: `frontend/`（React+Vite）。**経営層ビュー**＋**推進者ビュー**の2画面。ビルド不要は `frontend/standalone.html`
+- **CI**: `.github/workflows/ci.yml`
+
+```bash
+uvicorn backend.api.main:app --reload
+cd frontend && npm install && npm run dev     # or: open frontend/standalone.html
+```
 
 ## 予定フォルダ構成（実装時）
 

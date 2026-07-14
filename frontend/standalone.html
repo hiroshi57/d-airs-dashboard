@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-AIRS ダッシュボード(スタンドアロン)</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
+    .wrap{max-width:760px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
+    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .big{font-size:40px;color:#1a5fb4;font-weight:bold} .down{color:#c0392b} .up{color:#2bb673}
+    .drow{display:flex;gap:10px;align-items:center;margin:4px 0}
+    table{border-collapse:collapse;width:100%} th,td{border:1px solid #dde;padding:6px 8px} th{background:#eef2fb}
+    nav button{margin-right:8px} .privacy{color:#889;font-size:12px}
+  </style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+  const R = [
+    {month:"2026-04",score:48.0,domains:{adoption:45,application:50,ability:48,assurance:50}},
+    {month:"2026-05",score:55.5,domains:{adoption:55,application:58,ability:52,assurance:56}},
+    {month:"2026-06",score:62.0,domains:{adoption:60,application:66,ability:60,assurance:62}},
+  ];
+  const CHURN=[{department:"営業部",peak:50,latest:24,drop_pct:52}];
+  const RECS=[{master_id:"M-02",name:"活用深化ワークショップ",target:"推進部署",effort_days:3}];
+  function App(){
+    const [tab,setTab]=React.useState("exec");
+    const latest=R[R.length-1], delta=latest.score-R[R.length-2].score;
+    return (<div className="wrap"><h1>D-AIRS 定着ダッシュボード <small style={{fontSize:12,color:"#889"}}>(デモ)</small></h1>
+      <nav><button onClick={()=>setTab("exec")} disabled={tab==="exec"}>経営層</button>
+        <button onClick={()=>setTab("champ")} disabled={tab==="champ"}>推進者</button></nav>
+      {tab==="exec"?(<div className="card"><h2>組織 D-AIRS</h2>
+        <div className="big">{latest.score.toFixed(1)} <small>/100</small></div>
+        <div className={delta>=0?"up":"down"}>前月比 {delta>=0?"+":""}{delta.toFixed(1)}</div>
+        <h3>4ドメイン</h3>{Object.entries(latest.domains).map(([k,v])=>(
+          <div className="drow" key={k}><span style={{width:90}}>{k}</span>
+            <div style={{background:"#e4e7ee",borderRadius:4,width:180,height:12}}>
+              <div style={{background:"#1a5fb4",height:12,borderRadius:4,width:(v/100*180)+"px"}}></div></div>
+            <span>{v}</span></div>))}
+        <h3>推移</h3><table><tr><th>月</th><th>スコア</th></tr>
+          {R.map(r=>(<tr key={r.month}><td>{r.month}</td><td>{r.score.toFixed(1)}</td></tr>))}</table>
+      </div>):(<div className="card"><h2>離脱検知</h2>
+        <ul>{CHURN.map(a=>(<li key={a.department}>{a.department}: ピーク{a.peak}→{a.latest}
+          <b className="down"> ▼{a.drop_pct}%</b></li>))}</ul>
+        <h2>推奨介入施策</h2><ul>{RECS.map(r=>(<li key={r.master_id}>[{r.master_id}] {r.name}（{r.target}）</li>))}</ul>
+      </div>)}
+      <p className="privacy">※個人別スコアは非表示・最小集計単位5名でマスク</p></div>);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script></body></html>
