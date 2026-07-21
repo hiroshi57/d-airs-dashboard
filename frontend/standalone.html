@@ -5,7 +5,7 @@
   <title>D-AIRS ダッシュボード(スタンドアロン)</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
     body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
     .wrap{max-width:760px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
@@ -28,7 +28,7 @@
 </style>
 </head>
 <body><div id="root"></div>
-<script type="text/babel" data-presets="react">
+<script type="text/plain" id="__jsx">
   const R = [
     {month:"2026-04",score:48.0,domains:{adoption:45,application:50,ability:48,assurance:50}},
     {month:"2026-05",score:55.5,domains:{adoption:55,application:58,ability:52,assurance:56}},
@@ -60,4 +60,4 @@
       <p className="privacy">※個人別スコアは非表示・最小集計単位5名でマスク</p></div>);
   }
   ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script></body></html>
+</script><script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);})();</script></body></html>
