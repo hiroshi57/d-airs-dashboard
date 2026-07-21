@@ -2,62 +2,136 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D-AIRS ダッシュボード(スタンドアロン)</title>
+  <title>D-AIRS 定着ダッシュボード</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
-    body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
-    .wrap{max-width:760px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
-    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-    .big{font-size:40px;color:#1a5fb4;font-weight:bold} .down{color:#c0392b} .up{color:#2bb673}
-    .drow{display:flex;gap:10px;align-items:center;margin:4px 0}
-    table{border-collapse:collapse;width:100%} th,td{border:1px solid #dde;padding:6px 8px} th{background:#eef2fb}
-    nav button{margin-right:8px} .privacy{color:#889;font-size:12px}
-  
-    /* --- レスポンシブ強化(スマホ最適化) --- */
-    *{box-sizing:border-box} img,pre,table{max-width:100%}
-    .metrics{flex-wrap:wrap}
-    @media (max-width:640px){
-      body{padding:14px} .wrap{max-width:100%}
-      h1{font-size:19px} nav button{margin-bottom:6px}
-      .metrics{flex-direction:column;gap:8px} .metric{width:100%}
-      table{display:block;overflow-x:auto;white-space:nowrap;font-size:13px}
-      pre{overflow-x:auto} input,textarea,select{max-width:100%;width:100%}
-    }
-</style>
+    body{font-family:system-ui,sans-serif;background:#f5f7f9;margin:0;padding:24px;color:#152238}
+    .wrap{max-width:860px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
+    h2{font-size:16px;margin:2px 0 6px} h3{font-size:14px;margin:10px 0 4px;color:#334}
+    .sub{color:#8a97a6;font-size:12px} .card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .big{font-size:44px;color:#1a5fb4;font-weight:bold} .up{color:#17a673;font-weight:bold} .down{color:#c0392b;font-weight:bold}
+    .ai{background:linear-gradient(135deg,#eef4ff,#eafaf3);border-left:4px solid #1a5fb4;border-radius:10px;padding:14px}
+    .ai p{margin:6px 0;line-height:1.7;font-size:14px}
+    .drow{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+    .drow .name{width:190px;flex-shrink:0} .drow .name b{display:block} .drow .name span{color:#8a97a6;font-size:11px}
+    .track{flex:1;background:#eef1f5;border-radius:6px;height:14px} .fill{height:14px;border-radius:6px;background:#1a5fb4}
+    .drow .v{width:38px;text-align:right;font-weight:bold}
+    table{border-collapse:collapse;width:100%;font-size:13px} th,td{border:1px solid #e3e8ee;padding:8px;text-align:left} th{background:#eef2fb}
+    .pill{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap}
+    .tl{border-left:3px solid #cdd6df;margin-left:8px;padding-left:16px}
+    .tl .item{position:relative;margin:14px 0} .tl .dot{position:absolute;left:-22px;top:2px;width:12px;height:12px;border-radius:50%;background:#1a5fb4}
+    .tl .m{font-weight:bold} .tl .s{color:#1a5fb4;font-weight:bold} .tl .b{font-size:13px;color:#445;line-height:1.6;margin-top:2px}
+    .tag{background:#eef2fb;color:#1a5fb4;border-radius:6px;padding:1px 7px;font-size:11px;margin-left:6px}
+    .note{color:#8a97a6;font-size:12px}
+    @media(max-width:640px){body{padding:14px} .wrap{max-width:100%} .drow .name{width:130px}
+      table{display:block;overflow-x:auto;white-space:nowrap;font-size:12px} h1{font-size:19px}}
+  </style>
 </head>
 <body><div id="root"></div>
 <script type="text/plain" id="__jsx">
-  const R = [
-    {month:"2026-04",score:48.0,domains:{adoption:45,application:50,ability:48,assurance:50}},
-    {month:"2026-05",score:55.5,domains:{adoption:55,application:58,ability:52,assurance:56}},
-    {month:"2026-06",score:62.0,domains:{adoption:60,application:66,ability:60,assurance:62}},
-  ];
-  const CHURN=[{department:"営業部",peak:50,latest:24,drop_pct:52}];
-  const RECS=[{master_id:"M-02",name:"活用深化ワークショップ",target:"推進部署",effort_days:3}];
-  function App(){
-    const [tab,setTab]=React.useState("exec");
-    const latest=R[R.length-1], delta=latest.score-R[R.length-2].score;
-    return (<div className="wrap"><h1>D-AIRS 定着ダッシュボード <small style={{fontSize:12,color:"#889"}}>(デモ)</small></h1>
-      <nav><button onClick={()=>setTab("exec")} disabled={tab==="exec"}>経営層</button>
-        <button onClick={()=>setTab("champ")} disabled={tab==="champ"}>推進者</button></nav>
-      {tab==="exec"?(<div className="card"><h2>組織 D-AIRS</h2>
-        <div className="big">{latest.score.toFixed(1)} <small>/100</small></div>
-        <div className={delta>=0?"up":"down"}>前月比 {delta>=0?"+":""}{delta.toFixed(1)}</div>
-        <h3>4ドメイン</h3>{Object.entries(latest.domains).map(([k,v])=>(
-          <div className="drow" key={k}><span style={{width:90}}>{k}</span>
-            <div style={{background:"#e4e7ee",borderRadius:4,width:180,height:12}}>
-              <div style={{background:"#1a5fb4",height:12,borderRadius:4,width:(v/100*180)+"px"}}></div></div>
-            <span>{v}</span></div>))}
-        <h3>推移</h3><table><tr><th>月</th><th>スコア</th></tr>
-          {R.map(r=>(<tr key={r.month}><td>{r.month}</td><td>{r.score.toFixed(1)}</td></tr>))}</table>
-      </div>):(<div className="card"><h2>離脱検知</h2>
-        <ul>{CHURN.map(a=>(<li key={a.department}>{a.department}: ピーク{a.peak}→{a.latest}
-          <b className="down"> ▼{a.drop_pct}%</b></li>))}</ul>
-        <h2>推奨介入施策</h2><ul>{RECS.map(r=>(<li key={r.master_id}>[{r.master_id}] {r.name}（{r.target}）</li>))}</ul>
-      </div>)}
-      <p className="privacy">※個人別スコアは非表示・最小集計単位5名でマスク</p></div>);
-  }
-  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script><script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);})();</script></body></html>
+const ORG={name:"デジタルアイデンティティ(サンプル企業)", targetUsers:110, wau:66, score:62.0, prev:55.5, target:65};
+const DOMAINS=[
+  {jp:"利用・定着", en:"Adoption", v:60, desc:"使われているか(WAU/対象者・継続率)", fact:"WAU 66/110名(60%)、30日継続 71%", todo:"営業部の利用を底上げ"},
+  {jp:"活用の深さ", en:"Application", v:66, desc:"何に使えているか(定型→分析→意思決定)", fact:"分析用途が先月比+12pt(議事録AI導入)", todo:"意思決定支援まで広げる"},
+  {jp:"スキル", en:"Ability", v:60, desc:"使いこなせるか(研修受講・スキル調査)", fact:"研修受講率 71%、サーベイ正答 62%", todo:"プロンプト研修を追加"},
+  {jp:"ガバナンス", en:"Assurance", v:62, desc:"安全に使えるか(ルール整備・周知・運用)", fact:"チェックリスト 8/13項目 充足", todo:"利用ルールの全社周知"},
+];
+const DEPTS=[
+  {d:"営業部", n:32, wau:41, s:44, st:"要介入", c:"#c0392b", act:"7月中に『基礎研修＋業務テンプレ配布』", who:"推進責任者"},
+  {d:"マーケ部", n:18, wau:78, s:74, st:"良好", c:"#17a673", act:"成功事例を全社へ横展開(事例化)", who:"マーケ部長"},
+  {d:"開発部", n:25, wau:82, s:71, st:"良好", c:"#17a673", act:"活用深化WS(意思決定支援へ)", who:"開発リード"},
+  {d:"管理部", n:15, wau:55, s:58, st:"要注視", c:"#f0a500", act:"利用ルールの周知・ガバナンス整備", who:"情シス"},
+  {d:"CS部", n:20, wau:60, s:61, st:"要注視", c:"#f0a500", act:"FAQのAI化を試行", who:"CS部長"},
+];
+const TL=[
+  {m:"2026-04", s:48.0, head:"先行導入フェーズ", tag:"導入", b:"マーケ部のみ先行導入。全社はアカウント配布のみで利用は限定的(全社WAU 28%)。スコアが低い主因は『利用・定着』の低さ。"},
+  {m:"2026-05", s:55.5, head:"全社キックオフ＋基礎研修", tag:"研修", b:"全社キックオフと基礎研修を実施。WAUが28%→52%へ改善し、『利用・定着』が全体を牽引して+7.5pt。"},
+  {m:"2026-06", s:62.0, head:"活用深化・課題は営業部", tag:"深化", b:"議事録AIを全社導入し『活用の深さ』が66へ向上(+6.5pt)。一方、営業部の定着が遅れ(スコア44)、全社の伸びを抑制している。"},
+];
+const FORECAST={m:"2026-07(予測)", s:67};
+
+function color(v){ return v>=70?"#17a673":v>=50?"#f0a500":"#c0392b"; }
+
+function Trend({tl, forecast, target}){
+  const pts=[...tl.map(x=>x.s), forecast.s];
+  const labels=[...tl.map(x=>x.m.slice(5)), "07予測"];
+  const W=320,H=130,pad=24, n=pts.length;
+  const x=i=>pad+i*(W-2*pad)/(n-1), y=v=>H-pad-(v/100)*(H-2*pad);
+  const solid=tl.map((p,i)=>x(i)+","+y(p.s)).join(" ");
+  const dash=x(n-2)+","+y(tl[tl.length-1].s)+" "+x(n-1)+","+y(forecast.s);
+  return (<svg width="100%" viewBox={"0 0 "+W+" "+H} style={{maxWidth:420}}>
+    <line x1={pad} y1={y(target)} x2={W-pad} y2={y(target)} stroke="#e0533b" strokeDasharray="4 3" strokeWidth="1"/>
+    <text x={W-pad} y={y(target)-4} textAnchor="end" fontSize="9" fill="#e0533b">目標 {target}</text>
+    <polyline points={solid} fill="none" stroke="#1a5fb4" strokeWidth="2.5"/>
+    <polyline points={dash} fill="none" stroke="#1a5fb4" strokeWidth="2" strokeDasharray="5 4" opacity="0.6"/>
+    {pts.map((v,i)=>(<g key={i}>
+      <circle cx={x(i)} cy={y(v)} r="4" fill={i===n-1?"#8aa9d6":"#1a5fb4"}/>
+      <text x={x(i)} y={y(v)-9} textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1a5fb4">{v}</text>
+      <text x={x(i)} y={H-6} textAnchor="middle" fontSize="9" fill="#8a97a6">{labels[i]}</text>
+    </g>))}
+  </svg>);
+}
+
+function App(){
+  const delta=(ORG.score-ORG.prev).toFixed(1);
+  const risk=DEPTS.filter(d=>d.st!=="良好").sort((a,b)=>a.s-b.s)[0];
+  const good=DEPTS.filter(d=>d.st==="良好");
+  return (<div className="wrap">
+    <h1>D-AIRS 定着ダッシュボード <span className="sub">AIツールが「根付いているか」を測る指標</span></h1>
+    <div className="sub">対象: {ORG.name} / 対象者 {ORG.targetUsers}名 / 集計 2026-06</div>
+
+    <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center"}}>
+      <div>
+        <h2>組織 D-AIRS スコア</h2>
+        <div className="big">{ORG.score.toFixed(1)} <span style={{fontSize:18,color:"#8a97a6"}}>/100</span></div>
+        <div className="up">前月比 +{delta}（{ORG.prev} → {ORG.score}）</div>
+      </div>
+      <div style={{flex:1,minWidth:240}}>
+        <div className="ai"><p><b>🤖 AI講評 — 誰が何をすべきか</b></p>
+          <p>全社スコアは <b>{ORG.score}</b>(前月比+{delta})で改善傾向。ただし <b>{risk.d}</b>(スコア{risk.s}・WAU{risk.wau}%)が唯一の離脱リスクです。</p>
+          <p>👉 <b>{risk.who}</b>は{risk.d}向けに<b>{risk.act}</b>を実施してください。好調な{good.map(g=>g.d).join("・")}は成功事例を横展開し、来月の全社目標<b>{ORG.target}点</b>が射程です。</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="card">
+      <h2>4ドメイン（何が良くて何が足りないか）</h2>
+      {DOMAINS.map((d,i)=>(<div key={i} style={{margin:"12px 0"}}>
+        <div className="drow"><span className="name"><b>{d.jp}</b><span>{d.desc}</span></span>
+          <div className="track"><div className="fill" style={{width:d.v+"%",background:color(d.v)}}></div></div>
+          <span className="v">{d.v}</span></div>
+        <div className="note" style={{marginLeft:0}}>実績: {d.fact} ／ <b style={{color:"#1a5fb4"}}>次の一手:</b> {d.todo}</div>
+      </div>))}
+    </div>
+
+    <div className="card">
+      <h2>部署別の状態と「誰が何をするか」</h2>
+      <table><thead><tr><th>部署</th><th>対象</th><th>WAU率</th><th>スコア</th><th>状態</th><th>推奨アクション</th><th>担当</th></tr></thead>
+        <tbody>{DEPTS.map((d,i)=>(<tr key={i}>
+          <td><b>{d.d}</b></td><td>{d.n}名</td><td>{d.wau}%</td><td style={{color:d.c,fontWeight:"bold"}}>{d.s}</td>
+          <td><span className="pill" style={{background:d.c+"22",color:d.c}}>{d.st}</span></td>
+          <td>{d.act}</td><td>{d.who}</td></tr>))}
+        </tbody></table>
+    </div>
+
+    <div className="card">
+      <h2>スコア推移と「各月に何が起きたか」</h2>
+      <Trend tl={TL} forecast={FORECAST} target={ORG.target}/>
+      <div className="tl">{TL.map((t,i)=>(<div className="item" key={i}>
+        <div className="dot"></div>
+        <div className="m"><span className="s">{t.s}</span>　{t.m}　<span className="m">{t.head}</span><span className="tag">{t.tag}</span></div>
+        <div className="b">{t.b}</div>
+      </div>))}
+        <div className="item"><div className="dot" style={{background:"#8aa9d6"}}></div>
+          <div className="m"><span className="s" style={{color:"#8aa9d6"}}>{FORECAST.s}</span>　{FORECAST.m}　<span className="m">トレンド予測</span></div>
+          <div className="b">現状ペースなら来月は約{FORECAST.s}点。営業部を底上げできれば目標{ORG.target}点を上回る見込み。</div></div>
+      </div>
+    </div>
+    <p className="note">※個人別スコアは非表示・最小集計単位5名でマスク（プライバシー設計）。数値はサンプル企業の運用例。</p>
+  </div>);
+}
+</script>
+<script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));})();</script>
+</body></html>
