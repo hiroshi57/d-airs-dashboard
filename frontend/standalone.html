@@ -25,6 +25,7 @@
     .tl .m{font-weight:bold} .tl .s{color:#1a5fb4;font-weight:bold} .tl .b{font-size:13px;color:#445;line-height:1.6;margin-top:2px}
     .tag{background:#eef2fb;color:#1a5fb4;border-radius:6px;padding:1px 7px;font-size:11px;margin-left:6px}
     .note{color:#8a97a6;font-size:12px}
+    button.ghost{border:0;border-radius:8px;background:#eef2fb;color:#1a5fb4;padding:8px 14px;cursor:pointer;font-size:13px}
     @media(max-width:640px){body{padding:14px} .wrap{max-width:100%} .drow .name{width:130px}
       table{display:block;overflow-x:auto;white-space:nowrap;font-size:12px} h1{font-size:19px}}
   </style>
@@ -45,12 +46,16 @@ const DEPTS=[
   {d:"管理部", n:15, wau:55, s:58, st:"要注視", c:"#f0a500", act:"利用ルールの周知・ガバナンス整備", who:"情シス"},
   {d:"CS部", n:20, wau:60, s:61, st:"要注視", c:"#f0a500", act:"FAQのAI化を試行", who:"CS部長"},
 ];
+// 各月: 目標(約束) → 施策 → 実績 → 達成判定 を明示
 const TL=[
-  {m:"2026-04", s:48.0, head:"先行導入フェーズ", tag:"導入", b:"マーケ部のみ先行導入。全社はアカウント配布のみで利用は限定的(全社WAU 28%)。スコアが低い主因は『利用・定着』の低さ。"},
-  {m:"2026-05", s:55.5, head:"全社キックオフ＋基礎研修", tag:"研修", b:"全社キックオフと基礎研修を実施。WAUが28%→52%へ改善し、『利用・定着』が全体を牽引して+7.5pt。"},
-  {m:"2026-06", s:62.0, head:"活用深化・課題は営業部", tag:"深化", b:"議事録AIを全社導入し『活用の深さ』が66へ向上(+6.5pt)。一方、営業部の定着が遅れ(スコア44)、全社の伸びを抑制している。"},
+  {m:"2026-04", s:48.0, tag:"導入", goalS:45, goal:"マーケ部で先行導入し土台を作る",
+    act:"アカウント配布・先行部署の選定", actual:"全社WAU 28%。先行のみで実測48.0", res:"達成", resc:"#17a673"},
+  {m:"2026-05", s:55.5, tag:"研修", goalS:54, goal:"全社WAU 50%までを目標に基礎研修",
+    act:"全社キックオフ＋基礎研修", actual:"WAU 28%→52%へ。実測55.5(目標54を上回る)", res:"達成", resc:"#17a673"},
+  {m:"2026-06", s:62.0, tag:"深化", goalS:63, goal:"活用深化で63点を約束",
+    act:"議事録AIを全社導入", actual:"活用の深さ66へ。ただし営業部が遅れ実測62.0(目標63に未達)", res:"未達", resc:"#e0533b"},
 ];
-const FORECAST={m:"2026-07(予測)", s:67};
+const FORECAST={m:"2026-07", s:67, goal:"目標65点（営業部の底上げが条件）"};
 
 function color(v){ return v>=70?"#17a673":v>=50?"#f0a500":"#c0392b"; }
 
@@ -74,19 +79,28 @@ function Trend({tl, forecast, target}){
   </svg>);
 }
 
+const HKEY="dairs_history_v1";
 function App(){
   const delta=(ORG.score-ORG.prev).toFixed(1);
   const risk=DEPTS.filter(d=>d.st!=="良好").sort((a,b)=>a.s-b.s)[0];
   const good=DEPTS.filter(d=>d.st==="良好");
+  const [hist,setHist]=React.useState(()=>{try{return JSON.parse(localStorage.getItem(HKEY)||"[]");}catch(e){return [];}});
+  const [saved,setSaved]=React.useState(false);
+  const vsTarget=(ORG.score-ORG.target).toFixed(1);
+  const save=()=>{const h=[{ts:new Date().toLocaleString("ja-JP"),score:ORG.score,target:ORG.target},...hist].slice(0,8);
+    setHist(h);localStorage.setItem(HKEY,JSON.stringify(h));setSaved(true);};
   return (<div className="wrap">
     <h1>D-AIRS 定着ダッシュボード <span className="sub">AIツールが「根付いているか」を測る指標</span></h1>
     <div className="sub">対象: {ORG.name} / 対象者 {ORG.targetUsers}名 / 集計 2026-06</div>
 
     <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center"}}>
       <div>
-        <h2>組織 D-AIRS スコア</h2>
+        <h2>組織 D-AIRS スコア <span className="sub">（2026-06 実績）</span></h2>
         <div className="big">{ORG.score.toFixed(1)} <span style={{fontSize:18,color:"#8a97a6"}}>/100</span></div>
         <div className="up">前月比 +{delta}（{ORG.prev} → {ORG.score}）</div>
+        <div className="sub">目標 {ORG.target}点 に対し <b style={{color:vsTarget<0?"#e0533b":"#17a673"}}>{vsTarget}</b>（{vsTarget<0?"未達":"達成"}）</div>
+        <button className="ghost" onClick={save} style={{marginTop:8}}>{saved?"保存しました✓":"この実績を保存"}</button>
+        {hist.length>0 && <div className="sub" style={{marginTop:6}}>保存履歴: {hist.slice(0,3).map((h,i)=>(<span key={i}>{h.ts.split(" ")[0]}={h.score} </span>))}</div>}
       </div>
       <div style={{flex:1,minWidth:240}}>
         <div className="ai"><p><b>🤖 AI講評 — 誰が何をすべきか</b></p>
@@ -119,14 +133,20 @@ function App(){
     <div className="card">
       <h2>スコア推移と「各月に何が起きたか」</h2>
       <Trend tl={TL} forecast={FORECAST} target={ORG.target}/>
+      <p className="sub">各月＝「目標(約束)」に対して「施策」を打ち、「実績」がどうだったか（達成/未達）。数値は<b>実績</b>です。</p>
       <div className="tl">{TL.map((t,i)=>(<div className="item" key={i}>
-        <div className="dot"></div>
-        <div className="m"><span className="s">{t.s}</span>　{t.m}　<span className="m">{t.head}</span><span className="tag">{t.tag}</span></div>
-        <div className="b">{t.b}</div>
+        <div className="dot" style={{background:t.resc}}></div>
+        <div className="m"><span className="s" style={{color:t.resc}}>実績 {t.s}</span>　{t.m}
+          <span className="tag">{t.tag}</span>
+          <span className="pill" style={{background:t.resc+"22",color:t.resc,marginLeft:6}}>{t.res}</span></div>
+        <div className="b">🎯 <b>目標(約束)</b>: {t.goal}（目標スコア {t.goalS}）</div>
+        <div className="b">🔧 <b>施策</b>: {t.act}</div>
+        <div className="b">📊 <b>実績</b>: {t.actual}</div>
       </div>))}
         <div className="item"><div className="dot" style={{background:"#8aa9d6"}}></div>
-          <div className="m"><span className="s" style={{color:"#8aa9d6"}}>{FORECAST.s}</span>　{FORECAST.m}　<span className="m">トレンド予測</span></div>
-          <div className="b">現状ペースなら来月は約{FORECAST.s}点。営業部を底上げできれば目標{ORG.target}点を上回る見込み。</div></div>
+          <div className="m"><span className="s" style={{color:"#8aa9d6"}}>予測 {FORECAST.s}</span>　{FORECAST.m}　<span className="m">来月の目標と見込み</span></div>
+          <div className="b">🎯 <b>目標(約束)</b>: {FORECAST.goal}</div>
+          <div className="b">📈 現状ペースなら約{FORECAST.s}点。営業部を底上げできれば目標{ORG.target}点を上回る見込み。</div></div>
       </div>
     </div>
     <p className="note">※個人別スコアは非表示・最小集計単位5名でマスク（プライバシー設計）。数値はサンプル企業の運用例。</p>
