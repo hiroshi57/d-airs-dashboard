@@ -2,142 +2,163 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D-AIRS 定着ダッシュボード</title>
+  <title>D-AIRS 定着ダッシュボード（実データ入力）</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
     body{font-family:system-ui,sans-serif;background:#f5f7f9;margin:0;padding:24px;color:#152238}
-    .wrap{max-width:880px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
+    .wrap{max-width:900px;margin:0 auto} h1{color:#1a5fb4;font-size:22px}
     h2{font-size:16px;margin:2px 0 8px} h3{font-size:14px;margin:8px 0 4px;color:#334} .sub{color:#8a97a6;font-size:12px}
     .card{background:#fff;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    .real{background:#eef4ff;border:1px solid #c5d8f5;border-radius:10px;padding:8px 12px;font-size:13px;color:#1a5fb4;margin-bottom:8px}
     .big{font-size:44px;color:#1a5fb4;font-weight:bold} .up{color:#17a673;font-weight:bold} .down{color:#e0533b;font-weight:bold}
     .summary{background:linear-gradient(135deg,#eef4ff,#eafaf3);border-left:4px solid #1a5fb4;border-radius:10px;padding:14px}
     .summary h3{margin:0 0 8px;color:#0f3d78} .summary ul{margin:0;padding-left:4px;list-style:none} .summary li{margin:8px 0;line-height:1.6;font-size:14px}
     .dom{border:1px solid #e6ebf1;border-radius:10px;padding:12px;margin:8px 0}
     .dom .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .dom .nm{font-weight:bold;font-size:15px} .track{flex:1;min-width:100px;background:#eef1f5;border-radius:6px;height:14px} .fill{height:14px;border-radius:6px}
-    .tag{padding:2px 9px;border-radius:12px;font-size:11px;font-weight:bold}
+    .dom input.rng{width:100%} .tag{padding:2px 9px;border-radius:12px;font-size:11px;font-weight:bold}
     .good{background:#e7f7ef;color:#0f7a54} .bad{background:#fdeeee;color:#c0392b} .mid{background:#fff5e6;color:#b5651d}
-    .next{background:#f3f8ff;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:13px}
-    .next b{color:#1a5fb4}
-    .flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:8px 0}
-    .flow .box{background:#f7faff;border:1px solid #dbe6f5;border-radius:8px;padding:8px 12px;font-size:13px;flex:1;min-width:150px}
-    .flow .arrow{align-self:center;color:#8aa9d6;font-weight:bold}
-    table{border-collapse:collapse;width:100%;font-size:13px} th,td{border:1px solid #e3e8ee;padding:8px;text-align:left} th{background:#eef2fb}
+    .next{background:#f3f8ff;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:13px} .next b{color:#1a5fb4}
+    .lvl{display:inline-block;padding:3px 12px;border-radius:20px;font-weight:bold;font-size:13px;color:#fff}
+    table{border-collapse:collapse;width:100%;font-size:13px} th,td{border:1px solid #e3e8ee;padding:6px;text-align:left} th{background:#eef2fb}
+    td input{width:56px;border:1px solid #cdd6df;border-radius:5px;padding:3px 4px;font-size:12.5px;text-align:right}
+    td input.nm{width:100px;text-align:left}
     .pill{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap}
     .tl{border-left:3px solid #cdd6df;margin-left:8px;padding-left:16px}
     .tl .item{position:relative;margin:16px 0} .tl .dot{position:absolute;left:-22px;top:3px;width:12px;height:12px;border-radius:50%}
     .tl .b{font-size:13px;color:#445;line-height:1.6;margin-top:3px}
     .target-input{width:60px;border:1px solid #cdd6df;border-radius:6px;padding:4px 6px;font-size:15px;text-align:right}
-    .note{color:#8a97a6;font-size:12px} button.ghost{border:0;border-radius:8px;background:#eef2fb;color:#1a5fb4;padding:8px 14px;cursor:pointer;font-size:13px;margin-top:8px}
+    button{border:0;border-radius:8px;cursor:pointer;font-size:13px;padding:7px 12px}
+    button.ghost{background:#eef2fb;color:#1a5fb4;margin-left:6px} button.add{background:#1a5fb4;color:#fff;margin-top:6px}
+    button.del{background:#f4dede;color:#c0392b;padding:2px 8px}
+    .note{color:#8a97a6;font-size:12px}
     @media(max-width:640px){body{padding:14px} .wrap{max-width:100%} h1{font-size:19px}
       table{display:block;overflow-x:auto;white-space:nowrap;font-size:12px}}
   </style>
 </head>
-<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:8px 14px;font:13px system-ui;color:#7a5b00">🔬 <b>デモ版</b>：数値は<b>サンプル（実測・実データではありません）</b>。ロジックの見せ方を確認するためのプロトタイプです。</div>
+<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:8px 14px;font:13px system-ui;color:#7a5b00">🔬 <b>実データ入力版</b>：4ドメインの評価と部署別のWAU/スコアを<b>入力すると、組織D-AIRSスコア・レーダー・要介入部署・次の一手を実計算</b>します。</div>
 <div id="root"></div>
 <script type="text/plain" id="__jsx">
-const ORG={name:"デジタルアイデンティティ(サンプル企業)", targetUsers:110, wau:66, score:62.0, prev:55.5};
-const DOMAINS=[
-  {jp:"利用・定着", desc:"使われているか(WAU/継続率)", v:60, fact:"WAU 66/110名(60%)。営業部が41%と低い", dept:"営業部", who:"推進責任者", action:"基礎研修＋業務テンプレ配布(7月)"},
-  {jp:"活用の深さ", desc:"何に使えているか(定型→分析→意思決定)", v:66, fact:"議事録AI導入で分析用途が先月比+12pt", dept:"開発部", who:"開発リード", action:"意思決定支援ユースケースへ拡張"},
-  {jp:"スキル", desc:"使いこなせるか(研修・調査)", v:60, fact:"研修受講率71%、サーベイ正答62%", dept:"実務担当", who:"人事", action:"プロンプト作成研修を追加"},
-  {jp:"ガバナンス", desc:"安全に使えるか(ルール整備)", v:62, fact:"利用ルールのチェックリスト 8/13項目", dept:"管理部門", who:"情シス", action:"利用ルールを全社周知"},
+const DOM0=[
+  {jp:"利用・定着", desc:"使われているか(WAU/継続率)", v:60, who:"推進責任者", action:"基礎研修＋業務テンプレ配布"},
+  {jp:"活用の深さ", desc:"何に使えているか(定型→分析→意思決定)", v:66, who:"開発リード", action:"意思決定支援ユースケースへ拡張"},
+  {jp:"スキル", desc:"使いこなせるか(研修・調査)", v:60, who:"人事", action:"プロンプト作成研修を追加"},
+  {jp:"ガバナンス", desc:"安全に使えるか(ルール整備)", v:62, who:"情シス", action:"利用ルールを全社周知"},
 ];
-const DEPTS=[
-  {d:"営業部", n:32, wau:41, s:44, st:"要介入", c:"#c0392b", act:"7月に基礎研修＋テンプレ配布", who:"推進責任者"},
-  {d:"マーケ部", n:18, wau:78, s:74, st:"良好", c:"#17a673", act:"成功事例を全社へ横展開", who:"マーケ部長"},
-  {d:"開発部", n:25, wau:82, s:71, st:"良好", c:"#17a673", act:"活用深化WS(意思決定支援へ)", who:"開発リード"},
-  {d:"管理部", n:15, wau:55, s:58, st:"要注視", c:"#f0a500", act:"利用ルール周知・ガバナンス整備", who:"情シス"},
-  {d:"CS部", n:20, wau:60, s:61, st:"要注視", c:"#f0a500", act:"FAQのAI化を試行", who:"CS部長"},
+const DEPT0=[
+  {d:"営業部", n:32, wau:41, s:44, who:"推進責任者", act:"基礎研修＋テンプレ配布"},
+  {d:"マーケ部", n:18, wau:78, s:74, who:"マーケ部長", act:"成功事例を全社へ横展開"},
+  {d:"開発部", n:25, wau:82, s:71, who:"開発リード", act:"活用深化WS(意思決定支援へ)"},
+  {d:"管理部", n:15, wau:55, s:58, who:"情シス", act:"利用ルール周知・ガバナンス整備"},
+  {d:"CS部", n:20, wau:60, s:61, who:"CS部長", act:"FAQのAI化を試行"},
 ];
 const TL=[
   {m:"2026-04", s:48.0, who:"マーケ部長", act:"マーケ部で先行導入", result:"全社WAU 28%・スコア48。先行のみで土台作り", resc:"#8a97a6"},
-  {m:"2026-05", s:55.5, who:"推進責任者", act:"全社キックオフ＋基礎研修", result:"WAU 28%→52%に改善、スコア+7.5(目標達成)", resc:"#17a673"},
-  {m:"2026-06", s:62.0, who:"開発リード", act:"議事録AIを全社導入", result:"活用の深さ66へ。ただし営業部が遅れスコア62", resc:"#f0a500"},
+  {m:"2026-05", s:55.5, who:"推進責任者", act:"全社キックオフ＋基礎研修", result:"WAU 28%→52%、スコア+7.5", resc:"#17a673"},
+  {m:"2026-06", s:62.0, who:"開発リード", act:"議事録AIを全社導入", result:"活用の深さ向上。ただし営業部が遅れる", resc:"#f0a500"},
 ];
 function dcolor(v){return v>=65?"#17a673":v<50?"#e0533b":"#f0a500";}
 function dtag(v){return v>=65?["good","◎強み"]:v<50?["bad","△要改善"]:["mid","○標準"];}
+function level(t){return t>=75?["定着期","#0f7a54"]:t>=60?["普及期","#17a673"]:t>=45?["立上げ期","#f0a500"]:["黎明期","#e0533b"];}
+function statusOf(s){return s>=65?["良好","#17a673"]:s>=52?["要注視","#f0a500"]:["要介入","#c0392b"];}
 
-const HKEY="dairs_hist_v2";
+function Radar({own,target}){
+  const cx=150,cy=145,R=100,N=own.length;
+  const ang=i=>-Math.PI/2+i*2*Math.PI/N;
+  const pt=(i,ratio)=>[cx+Math.cos(ang(i))*R*ratio, cy+Math.sin(ang(i))*R*ratio];
+  const poly=arr=>arr.map((v,i)=>pt(i,Math.max(0,Math.min(1,v/100))).join(",")).join(" ");
+  const tgt=own.map(()=>target);
+  return (<svg width="100%" viewBox="0 0 300 300" style={{maxWidth:340}}>
+    {[0.33,0.66,1].map((rr,k)=>(<polygon key={k} points={own.map((_,i)=>pt(i,rr).join(",")).join(" ")} fill="none" stroke="#e3e8ee"/>))}
+    {own.map((_,i)=>{const[x,y]=pt(i,1);return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#e3e8ee"/>;})}
+    <polygon points={poly(tgt)} fill="none" stroke="#f0a500" strokeWidth="2" strokeDasharray="4 3"/>
+    <polygon points={poly(own.map(d=>d))} fill="#1a5fb433" stroke="#1a5fb4" strokeWidth="2.5"/>
+    {DOM0.map((d,i)=>{const[x,y]=pt(i,1.17);return <text key={i} x={x} y={y} textAnchor="middle" fontSize="9.5" fill="#556">{d.jp}</text>;})}
+  </svg>);
+}
+
 function App(){
+  const [doms,setDoms]=React.useState(DOM0);
+  const [depts,setDepts]=React.useState(DEPT0);
   const [target,setTarget]=React.useState(65);
-  const [hist,setHist]=React.useState(()=>{try{return JSON.parse(localStorage.getItem(HKEY)||"[]");}catch(e){return [];}});
-  const [saved,setSaved]=React.useState(false);
-  const delta=(ORG.score-ORG.prev).toFixed(1);
-  const vs=(ORG.score-target).toFixed(1);
-  const reached=ORG.score>=target;
-  const risk=[...DEPTS].filter(d=>d.st!=="良好").sort((a,b)=>a.s-b.s)[0];
-  const good=DEPTS.filter(d=>d.st==="良好");
-  const weak=[...DOMAINS].sort((a,b)=>a.v-b.v)[0];
-  const strong=[...DOMAINS].sort((a,b)=>b.v-a.v)[0];
-  const save=()=>{const h=[{ts:new Date().toLocaleString("ja-JP"),score:ORG.score,target},...hist].slice(0,8);setHist(h);localStorage.setItem(HKEY,JSON.stringify(h));setSaved(true);};
+  const orgScore=Math.round(doms.reduce((a,d)=>a+d.v,0)/doms.length*10)/10;
+  const own=doms.map(d=>d.v);
+  const totalUsers=depts.reduce((a,d)=>a+d.n,0);
+  const wauAvg=totalUsers>0?Math.round(depts.reduce((a,d)=>a+d.wau*d.n,0)/totalUsers):0;
+  const vs=(orgScore-target).toFixed(1);
+  const reached=orgScore>=target;
+  const [lvl,lvlc]=level(orgScore);
+  const dsorted=[...depts].map(d=>({...d,st:statusOf(d.s)})).sort((a,b)=>a.s-b.s);
+  const risk=dsorted[0];
+  const good=depts.filter(d=>d.s>=65);
+  const weak=[...doms].sort((a,b)=>a.v-b.v)[0];
+  const updDom=(i,v)=>setDoms(ds=>ds.map((d,j)=>j===i?{...d,v:Number(v)||0}:d));
+  const updDept=(i,k,v)=>setDepts(ds=>ds.map((d,j)=>j===i?{...d,[k]:(k==="d"||k==="who"||k==="act")?v:(Number(v)||0)}:d));
+  const delDept=i=>setDepts(ds=>ds.filter((_,j)=>j!==i));
+  const addDept=()=>setDepts(ds=>[...ds,{d:"新部署",n:10,wau:50,s:55,who:"担当者",act:"施策"}]);
 
   return (<div className="wrap">
     <h1>D-AIRS 定着ダッシュボード <span className="sub">AIツールが「根付いているか」を測る指標</span></h1>
-    <div className="sub">対象: {ORG.name} / 対象者 {ORG.targetUsers}名 / 集計 2026-06(実績)</div>
-
-    <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"flex-start"}}>
-      <div>
-        <h2>組織 D-AIRS スコア <span className="sub">（実績）</span></h2>
-        <div className="big">{ORG.score.toFixed(1)} <span style={{fontSize:18,color:"#8a97a6"}}>/100</span></div>
-        <div className="up">前月比 +{delta}（{ORG.prev} → {ORG.score}）</div>
-        <div style={{marginTop:8}}>目標 <input className="target-input" type="number" value={target} onChange={e=>setTarget(Number(e.target.value)||0)}/> 点
-          に対し <b className={vs<0?"down":"up"}>{vs}</b>（{reached?"達成":"未達"}）</div>
-        <div className="note">※目標は自由に変更できます。到達点ではなく<b>途中のマイルストーン</b>——達成したら次の目標(例:75点=全部署で活用)へ更新する運用です。</div>
-        <button className="ghost" onClick={save}>{saved?"保存しました✓":"この実績を保存"}</button>
-        {hist.length>0 && <span className="sub"> 履歴: {hist.slice(0,3).map((h,i)=><span key={i}>{h.ts.split(" ")[0]}={h.score}(目標{h.target}) </span>)}</span>}
-      </div>
-      <div style={{flex:1,minWidth:260}}>
-        <div className="summary"><h3>🤖 AIサマリー（今月の要点）</h3>
-          <ul>
-            <li>⚠ <b>最優先</b>：{risk.d}(スコア{risk.s}・WAU{risk.wau}%)が全社の足かせ → {risk.who}が「{risk.act}」</li>
-            <li>✅ <b>好調</b>：{good.map(g=>g.d).join("・")}は高定着 → 成功事例を横展開</li>
-            <li>📌 <b>底上げ</b>：{weak.jp}が最弱 → {weak.who}が「{weak.action}」</li>
-            <li>🎯 <b>見通し</b>：営業部を底上げできれば目標{target}点を上回る</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <div className="sub">対象者 {totalUsers}名 / 平均WAU {wauAvg}%</div>
 
     <div className="card">
-      <h2>4ドメイン — 強み / 課題 / 次の一手</h2>
-      {DOMAINS.map((d,i)=>{const [cls,label]=dtag(d.v);return (<div className="dom" key={i}>
+      <div className="real">✏️ <b>4ドメインの評価(0〜100)を入力</b>。組織スコアは4ドメインの平均、レーダーで目標ラインと比較します。</div>
+      {doms.map((d,i)=>{const [cls,label]=dtag(d.v);return (<div className="dom" key={i}>
         <div className="top">
           <span className="nm">{d.jp}</span><span className={"tag "+cls}>{label}</span>
           <div className="track"><div className="fill" style={{width:d.v+"%",background:dcolor(d.v)}}></div></div>
-          <span style={{fontWeight:"bold",color:dcolor(d.v)}}>{d.v}</span>
+          <input type="number" value={d.v} onChange={e=>updDom(i,e.target.value)} style={{width:56,textAlign:"right"}}/>
         </div>
-        <div className="sub" style={{marginTop:4}}>{d.desc}</div>
-        <div style={{fontSize:13,marginTop:4}}>実績: {d.fact}</div>
-        <div className="next">👉 <b>次の一手</b>: {d.action} ／ 担当: <b>{d.who}</b>（対象: {d.dept}）</div>
+        <input className="rng" type="range" min="0" max="100" value={d.v} onChange={e=>updDom(i,e.target.value)}/>
+        <div className="sub">{d.desc}</div>
+        <div className="next">👉 <b>次の一手</b>: {d.action} ／ 担当: <b>{d.who}</b></div>
       </div>);})}
     </div>
 
+    <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
+      <div>
+        <h2>組織 D-AIRS スコア</h2>
+        <div className="big">{orgScore.toFixed(1)} <span style={{fontSize:18,color:"#8a97a6"}}>/100</span></div>
+        <span className="lvl" style={{background:lvlc}}>段階: {lvl}</span>
+        <div style={{marginTop:8}}>目標 <input className="target-input" type="number" value={target} onChange={e=>setTarget(Number(e.target.value)||0)}/> 点
+          に対し <b className={vs<0?"down":"up"}>{vs}</b>（{reached?"達成":"未達"}）</div>
+        <div className="note">※目標は途中のマイルストーン。達成したら次の目標(例75点)へ更新する運用です。</div>
+      </div>
+      <div><Radar own={own} target={target}/><div className="sub" style={{textAlign:"center"}}>■自社 ／ ┈目標ライン({target})</div></div>
+    </div>
+
     <div className="card">
-      <h2>「ドメインの課題 → 誰が → 何をする」の流れ</h2>
-      <p className="sub">最も弱いドメインから、対応する部署・担当・アクションへ直結させます。</p>
-      <div className="flow">
-        <div className="box">🔻 <b>課題ドメイン</b><br/>{weak.jp}（{weak.v}点）<br/><span className="sub">{weak.fact}</span></div>
-        <div className="arrow">→</div>
-        <div className="box">👤 <b>誰が</b><br/>{weak.who}<br/><span className="sub">対象: {weak.dept}</span></div>
-        <div className="arrow">→</div>
-        <div className="box">🔧 <b>何をする</b><br/>{weak.action}</div>
+      <div className="summary"><h3>🤖 分析（要点）</h3>
+        <ul>
+          <li>⚠ <b>最優先</b>：{risk.d}(スコア{risk.s}・WAU{risk.wau}%)が全社の足かせ → {risk.who}が「{risk.act}」</li>
+          <li>✅ <b>好調</b>：{good.length?good.map(g=>g.d).join("・"):"（該当なし）"}{good.length?"は高定着 → 成功事例を横展開":""}</li>
+          <li>📌 <b>底上げ</b>：ドメイン「{weak.jp}」({weak.v}点)が最弱 → {weak.who}が「{weak.action}」</li>
+          <li>🎯 <b>見通し</b>：{reached?"目標到達。次段階の目標へ更新を":risk.d+"を底上げすれば目標"+target+"点に近づく"}</li>
+        </ul>
       </div>
     </div>
 
     <div className="card">
-      <h2>部署別の状態と担当アクション</h2>
-      <table><thead><tr><th>部署</th><th>対象</th><th>WAU率</th><th>スコア</th><th>状態</th><th>アクション</th><th>担当</th></tr></thead>
-        <tbody>{DEPTS.map((d,i)=>(<tr key={i}><td><b>{d.d}</b></td><td>{d.n}名</td><td>{d.wau}%</td>
-          <td style={{color:d.c,fontWeight:"bold"}}>{d.s}</td>
-          <td><span className="pill" style={{background:d.c+"22",color:d.c}}>{d.st}</span></td><td>{d.act}</td><td>{d.who}</td></tr>))}
+      <h2>部署別の状態（WAU/スコアを入力）</h2>
+      <table><thead><tr><th>部署</th><th>人数</th><th>WAU%</th><th>スコア</th><th>状態</th><th>担当</th><th></th></tr></thead>
+        <tbody>{depts.map((d,i)=>{const [st,c]=statusOf(d.s);return (<tr key={i}>
+          <td><input className="nm" value={d.d} onChange={e=>updDept(i,"d",e.target.value)}/></td>
+          <td><input value={d.n} onChange={e=>updDept(i,"n",e.target.value)}/></td>
+          <td><input value={d.wau} onChange={e=>updDept(i,"wau",e.target.value)}/></td>
+          <td><input value={d.s} onChange={e=>updDept(i,"s",e.target.value)}/></td>
+          <td><span className="pill" style={{background:c+"22",color:c}}>{st}</span></td>
+          <td><input className="nm" value={d.who} onChange={e=>updDept(i,"who",e.target.value)}/></td>
+          <td><button className="del" onClick={()=>delDept(i)}>×</button></td></tr>);})}
         </tbody></table>
+      <button className="add" onClick={addDept}>＋ 部署を追加</button>
+      <button className="ghost" onClick={()=>{setDepts(DEPT0);setDoms(DOM0);}}>サンプルに戻す</button>
     </div>
 
     <div className="card">
-      <h2>実績タイムライン — 「誰が何をした → どうなった」</h2>
+      <h2>実績タイムライン（運用例）— 「誰が何をした → どうなった」</h2>
+      <p className="sub">※このタイムラインは運用イメージのサンプルです（月次で実績を追記していく想定）。</p>
       <div className="tl">{TL.map((t,i)=>(<div className="item" key={i}>
         <div className="dot" style={{background:t.resc}}></div>
         <div><b style={{color:t.resc}}>{t.s}</b>　{t.m}</div>
@@ -145,7 +166,7 @@ function App(){
         <div className="b">📊 → {t.result}</div>
       </div>))}</div>
     </div>
-    <p className="note">※個人別スコアは非表示・最小集計単位5名でマスク(プライバシー設計)。数値はサンプル企業の運用例。</p>
+    <p className="note">※個人別スコアは非表示・最小集計単位5名でマスク(プライバシー設計)。ドメイン/部署スコアは入力値、組織スコアはその平均です。</p>
   </div>);
 }
 </script>
