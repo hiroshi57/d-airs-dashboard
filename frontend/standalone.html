@@ -688,7 +688,7 @@ function App() {
   // このアプリは常時ダッシュボード表示型で「クリックで詳細表示」という
   // 明確な区切りが無いため、部署データを編集した回数を無料枠としてカウント
   // する（編集＝そのレポートを実際に使っている操作とみなす）。
-  const recordEditUse = () => { if (!pro) { zenRecordUse(); setPro(zenIsPro()); } };
+  const recordEditUse = () => { if (!pro) { zenRecordUse(); setPro(zenIsPro()); window.zenMaybeWarnFreeLimit(); } };
   const orgScore = Math.round(doms.reduce((a, d) => a + d.v, 0) / doms.length * 10) / 10;
   const own = doms.map(d => d.v);
   const totalUsers = depts.reduce((a, d) => a + d.n, 0);
@@ -1631,6 +1631,24 @@ function ShareBar() {
     var s = zenState();
     s.used += 1;
     zenSetState(s);
+  };
+  /** 無料枠の残り1回になった直後（＝次回でペイウォールに当たる）に、
+   * 唐突なブロックによる離脱を抑えるため画面下部に予告トーストを出す（CVR-041）。
+   * JSX側の構造に依存しないよう、DOM操作で独立に描画する。 */
+  window.zenMaybeWarnFreeLimit = function () {
+    if (window.zenIsPro() || window.zenRemaining() !== 1) return;
+    var existing = document.getElementById('zen-warn-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'zen-warn-toast';
+    toast.style.cssText =
+      'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99998;' +
+      'background:#fff4e0;border:1px solid #f0d98a;color:#8a6100;font-size:.8rem;' +
+      'padding:8px 16px;border-radius:999px;box-shadow:0 4px 16px rgba(0,0,0,.15);' +
+      'font-family:sans-serif;white-space:nowrap';
+    toast.textContent = '⏳ 次で無料枠終了です';
+    document.body.appendChild(toast);
+    setTimeout(function () { if (toast.parentNode) toast.remove(); }, 5000);
   };
   function zenUnlockPro() {
     var s = zenState();
